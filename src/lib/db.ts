@@ -165,11 +165,15 @@ export async function getNearbyTrails(trailId: number, lat: number, lon: number,
       t.id, t.slug, t.name, t.difficulty,
       t.distance_km, t.elevation_gain_m, t.duration_min,
       t.cover_photo_url,
+      d.slug AS department_slug,
+      r.slug AS region_slug,
       ROUND(ST_Distance(
         t.start_point::geography,
         ST_MakePoint(${lon}, ${lat})::geography
       ) / 1000, 1) AS distance_from_here_km
     FROM trails t
+    LEFT JOIN departments d ON t.department_id = d.id
+    LEFT JOIN regions r ON t.region_id = r.id
     WHERE t.status = 'approved'
       AND t.id != ${trailId}
       AND t.start_point IS NOT NULL
