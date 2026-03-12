@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-outfit",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Rando France — Randonnées pédestres",
+  title: "Rando France — Randonnées pédestres en France",
   description: "Trouvez les plus belles randonnées pédestres en France : fiches détaillées, traces GPX, difficulté, dénivelé et photos.",
 };
 
@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={manrope.variable}>
-      <body className="font-sans antialiased">
+    <html lang="fr" className={outfit.variable}>
+      <body className="font-sans antialiased bg-white text-[#111111]">
         {children}
       </body>
     </html>
