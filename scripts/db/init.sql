@@ -79,6 +79,13 @@ CREATE TABLE IF NOT EXISTS trails (
   dogs_allowed        BOOLEAN,
   parking_info        TEXT,
   public_transport    TEXT,
+  start_address       TEXT,
+  municipality        VARCHAR(100),
+  postal_code         VARCHAR(10),
+  ign_map             VARCHAR(20),        -- référence carte IGN (ex: "3442OT")
+  dangers             TEXT[],             -- avertissements de sécurité
+  regulations         TEXT,              -- réglementation zone (parc, réserve…)
+  waypoints           JSONB,             -- points de passage avec descriptions
 
   -- SEO
   meta_title          VARCHAR(160),

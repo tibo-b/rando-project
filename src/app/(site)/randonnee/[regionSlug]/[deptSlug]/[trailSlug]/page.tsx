@@ -59,7 +59,6 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
   try {
     const dbTrail = await getApprovedTrailBySlug(trailSlug)
     if (dbTrail) {
-      // Adapter le format DB au format DemoTrail
       trail = {
         id: dbTrail.id,
         slug: dbTrail.slug,
@@ -70,9 +69,13 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
         region_slug: (dbTrail as any).region_slug ?? '',
         department_name: (dbTrail as any).department_name ?? '',
         department_slug: (dbTrail as any).department_slug ?? '',
+        municipality: (dbTrail as any).municipality ?? '',
+        postal_code: (dbTrail as any).postal_code ?? '',
         distance_km: dbTrail.distance_km ?? 0,
         elevation_gain_m: dbTrail.elevation_gain_m ?? 0,
         elevation_loss_m: dbTrail.elevation_loss_m ?? 0,
+        elevation_max_m: dbTrail.elevation_max_m ?? 0,
+        elevation_min_m: dbTrail.elevation_min_m ?? 0,
         duration_min: dbTrail.duration_min ?? 0,
         difficulty: (dbTrail.difficulty as DemoTrail['difficulty']) ?? 'moyen',
         trail_type: (dbTrail.trail_type as DemoTrail['trail_type']) ?? 'boucle',
@@ -81,8 +84,12 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
         cover_photo_url: dbTrail.cover_photo_url ?? '',
         gpx_url: dbTrail.gpx_url ?? null,
         parking: (dbTrail as any).parking_info ?? '',
-        start_address: '',
+        start_address: (dbTrail as any).start_address ?? '',
+        ign_map: (dbTrail as any).ign_map ?? '',
         gear: (dbTrail as any).recommended_gear ?? [],
+        dangers: (dbTrail as any).dangers ?? [],
+        regulations: (dbTrail as any).regulations ?? null,
+        waypoints: (dbTrail as any).waypoints ?? [],
         distances_km: (dbTrail as any).distances_km ?? [],
         elevations_m: (dbTrail as any).elevations_m ?? [],
         tags: [],
@@ -102,13 +109,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
       {/* ── HERO PHOTO ── */}
       <div className="relative h-[55vh] min-h-[360px] overflow-hidden">
         {trail.cover_photo_url ? (
-          <Image
-            src={trail.cover_photo_url}
-            alt={trail.name}
-            fill
-            className="object-cover"
-            priority
-          />
+          <Image src={trail.cover_photo_url} alt={trail.name} fill className="object-cover" priority />
         ) : (
           <div className="absolute inset-0 bg-[#F5F5F5]" />
         )}
@@ -117,7 +118,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
         {/* Fil d'Ariane */}
         <div className="absolute top-24 left-0 right-0 px-6">
           <div className="max-w-6xl mx-auto">
-            <nav className="flex items-center gap-1.5 text-xs text-white/70">
+            <nav className="flex items-center gap-1.5 text-xs text-white/70 flex-wrap">
               <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
               <span>›</span>
               <Link href="/randonnees" className="hover:text-white transition-colors">Randonnées</Link>
@@ -136,21 +137,22 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
               <span className={`w-1.5 h-1.5 rounded-full ${diff.dot}`} />
               {diff.label}
             </span>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 leading-tight">
-              {trail.name}
-            </h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 leading-tight">{trail.name}</h1>
             <p className="text-white/80 text-base max-w-xl mb-5">{trail.short_description}</p>
 
-            {/* Stats clés — visibles immédiatement */}
-            <div className="flex flex-wrap gap-3">
+            {/* Stats clés — visibles immédiatement sans scroller */}
+            <div className="flex flex-wrap gap-2">
               {[
-                { icon: '📍', label: 'Distance', value: `${trail.distance_km} km` },
-                { icon: '↑', label: 'Dénivelé +', value: `${trail.elevation_gain_m} m` },
-                { icon: '⏱', label: 'Durée', value: formatDuration(trail.duration_min) },
-                { icon: '🔄', label: 'Type', value: TYPE_LABEL[trail.trail_type] },
+                { icon: '📍', label: 'Distance',    value: `${trail.distance_km} km` },
+                { icon: '↑',  label: 'Dénivelé +',  value: `${trail.elevation_gain_m} m` },
+                { icon: '↓',  label: 'Dénivelé −',  value: `${trail.elevation_loss_m} m` },
+                { icon: '⏱',  label: 'Durée',       value: formatDuration(trail.duration_min) },
+                { icon: '▲',  label: 'Point haut',  value: `${trail.elevation_max_m} m` },
+                { icon: '▼',  label: 'Point bas',   value: `${trail.elevation_min_m} m` },
+                { icon: '🔄', label: 'Type',        value: TYPE_LABEL[trail.trail_type] },
               ].map(({ icon, label, value }) => (
-                <div key={label} className="glass-dark rounded-xl px-4 py-2.5 flex items-center gap-2">
-                  <span className="text-base leading-none">{icon}</span>
+                <div key={label} className="glass-dark rounded-xl px-3 py-2 flex items-center gap-2">
+                  <span className="text-sm leading-none">{icon}</span>
                   <div>
                     <p className="text-[10px] text-white/60 leading-none mb-0.5">{label}</p>
                     <p className="text-sm font-bold text-white leading-none">{value}</p>
@@ -161,6 +163,28 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
           </div>
         </div>
       </div>
+
+      {/* ── AVERTISSEMENTS DE SÉCURITÉ ── affiché en haut si dangers présents */}
+      {trail.dangers.length > 0 && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-6xl mx-auto px-6 py-4">
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5 shrink-0">⚠️</span>
+              <div>
+                <p className="text-sm font-bold text-amber-800 mb-2">Points de vigilance</p>
+                <ul className="space-y-1">
+                  {trail.dangers.map((d, i) => (
+                    <li key={i} className="text-sm text-amber-700 flex items-start gap-2">
+                      <span className="text-amber-400 shrink-0 mt-0.5">•</span>
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── CONTENU ── */}
       <div className="max-w-6xl mx-auto px-6 py-10">
@@ -173,11 +197,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
             <section>
               <h2 className="text-xl font-bold text-[#111111] mb-4">Carte du parcours</h2>
               <div className="rounded-2xl overflow-hidden border border-[#E5E7EB]">
-                <TrailMap
-                  lat={trail.start_lat}
-                  lon={trail.start_lon}
-                  gpxUrl={trail.gpx_url}
-                />
+                <TrailMap lat={trail.start_lat} lon={trail.start_lon} gpxUrl={trail.gpx_url} />
               </div>
             </section>
 
@@ -186,11 +206,35 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
               <section>
                 <h2 className="text-xl font-bold text-[#111111] mb-4">Profil altimétrique</h2>
                 <div className="bg-[#F5F5F5] rounded-2xl p-4">
-                  <ElevationChart
-                    distances={trail.distances_km}
-                    elevations={trail.elevations_m}
-                  />
+                  <ElevationChart distances={trail.distances_km} elevations={trail.elevations_m} />
                 </div>
+              </section>
+            )}
+
+            {/* Points de passage */}
+            {trail.waypoints.length > 0 && (
+              <section>
+                <h2 className="text-xl font-bold text-[#111111] mb-5">Itinéraire étape par étape</h2>
+                <ol className="relative border-l-2 border-[#E5E7EB] ml-3 space-y-0">
+                  {trail.waypoints.map((wp, i) => (
+                    <li key={wp.index} className="ml-6 pb-8 last:pb-0">
+                      {/* Numéro */}
+                      <span className={`absolute -left-[13px] flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold border-2 border-white ${i === 0 || i === trail!.waypoints.length - 1 ? 'bg-[#025C00] text-white' : 'bg-white text-[#025C00] border-[#025C00]'}`}>
+                        {wp.index}
+                      </span>
+                      <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 hover:border-[#025C00]/30 transition-colors">
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                          <p className="font-bold text-[#111111] text-sm">{wp.label}</p>
+                          <div className="flex items-center gap-3 shrink-0 text-xs text-gray-400">
+                            <span>▲ {wp.elevation_m} m</span>
+                            <span>· {wp.distance_from_start_km} km</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">{wp.description}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               </section>
             )}
 
@@ -198,7 +242,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
             {trail.description && (
               <section>
                 <h2 className="text-xl font-bold text-[#111111] mb-4">Description</h2>
-                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
                   {trail.description}
                 </div>
               </section>
@@ -207,7 +251,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
             {/* Infos pratiques */}
             <section>
               <h2 className="text-xl font-bold text-[#111111] mb-4">Infos pratiques</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {trail.parking && (
                   <div className="bg-[#F5F5F5] rounded-xl p-4">
                     <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-1.5">Parking</p>
@@ -216,8 +260,29 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
                 )}
                 {trail.start_address && (
                   <div className="bg-[#F5F5F5] rounded-xl p-4">
-                    <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-1.5">Départ</p>
+                    <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-1.5">Point de départ</p>
                     <p className="text-sm text-gray-700 leading-relaxed">{trail.start_address}</p>
+                    {trail.municipality && (
+                      <p className="text-xs text-gray-400 mt-1">{trail.municipality} {trail.postal_code}</p>
+                    )}
+                  </div>
+                )}
+                {trail.ign_map && (
+                  <div className="bg-[#F5F5F5] rounded-xl p-4">
+                    <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-1.5">Carte IGN</p>
+                    <p className="text-sm text-gray-700 font-mono font-bold">{trail.ign_map}</p>
+                    <p className="text-xs text-gray-400 mt-1">Série Bleue / Top 25</p>
+                  </div>
+                )}
+                <div className="bg-[#F5F5F5] rounded-xl p-4">
+                  <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-2">Coordonnées GPS</p>
+                  <p className="text-sm text-gray-700 font-mono">N {trail.start_lat.toFixed(5)}°</p>
+                  <p className="text-sm text-gray-700 font-mono">E {trail.start_lon.toFixed(5)}°</p>
+                </div>
+                {trail.regulations && (
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 sm:col-span-2">
+                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-1.5">Réglementation</p>
+                    <p className="text-sm text-amber-800 leading-relaxed">{trail.regulations}</p>
                   </div>
                 )}
                 {trail.tags.length > 0 && (
@@ -225,9 +290,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
                     <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-2">Tags</p>
                     <div className="flex flex-wrap gap-2">
                       {trail.tags.map(tag => (
-                        <span key={tag} className="text-xs bg-white border border-[#E5E7EB] text-gray-600 px-3 py-1 rounded-full">
-                          #{tag}
-                        </span>
+                        <span key={tag} className="text-xs bg-white border border-[#E5E7EB] text-gray-600 px-3 py-1 rounded-full">#{tag}</span>
                       ))}
                     </div>
                   </div>
@@ -239,16 +302,12 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
           {/* ── Colonne latérale ── */}
           <div className="space-y-5">
 
-            {/* Télécharger GPX */}
+            {/* GPX */}
             <div className="border border-[#E5E7EB] rounded-2xl p-5">
               <h3 className="font-bold text-[#111111] mb-1">Trace GPS</h3>
               <p className="text-xs text-gray-400 mb-4">Compatible Garmin, Suunto, Komoot, AllTrails…</p>
               {trail.gpx_url ? (
-                <a
-                  href={trail.gpx_url}
-                  download
-                  className="flex items-center justify-center gap-2 w-full bg-[#025C00] hover:bg-[#014800] text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors"
-                >
+                <a href={trail.gpx_url} download className="flex items-center justify-center gap-2 w-full bg-[#025C00] hover:bg-[#014800] text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
@@ -259,6 +318,28 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
                   GPX bientôt disponible
                 </div>
               )}
+            </div>
+
+            {/* Récap chiffres clés */}
+            <div className="border border-[#E5E7EB] rounded-2xl p-5">
+              <h3 className="font-bold text-[#111111] mb-4">Chiffres clés</h3>
+              <dl className="space-y-3">
+                {[
+                  { label: 'Distance',      value: `${trail.distance_km} km` },
+                  { label: 'Dénivelé +',    value: `${trail.elevation_gain_m} m` },
+                  { label: 'Dénivelé −',    value: `${trail.elevation_loss_m} m` },
+                  { label: 'Point haut',    value: `${trail.elevation_max_m} m` },
+                  { label: 'Point bas',     value: `${trail.elevation_min_m} m` },
+                  { label: 'Durée moy.',    value: formatDuration(trail.duration_min) },
+                  { label: 'Difficulté',    value: DIFFICULTY_MAP[trail.difficulty]?.label ?? '—' },
+                  { label: 'Type',          value: TYPE_LABEL[trail.trail_type] },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between text-sm">
+                    <dt className="text-gray-400">{label}</dt>
+                    <dd className="font-semibold text-[#111111]">{value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
             {/* Équipements */}
@@ -278,37 +359,30 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
               </div>
             )}
 
-            {/* Randonnées à proximité */}
-            <NearbyTrails
-              trailId={trail.id}
-              lat={trail.start_lat}
-              lon={trail.start_lon}
-            />
+            {/* Randonnées à proximité (DB) */}
+            <NearbyTrails trailId={trail.id} lat={trail.start_lat} lon={trail.start_lon} />
 
-            {/* Autres randonnées de la même région (démo) */}
-            <div className="border border-[#E5E7EB] rounded-2xl p-5">
-              <h3 className="font-bold text-[#111111] mb-4">Dans la même région</h3>
-              <ul className="space-y-3">
-                {DEMO_TRAILS.filter(t => t.region_slug === trail!.region_slug && t.slug !== trail!.slug).slice(0, 3).map(t => (
-                  <li key={t.id}>
-                    <Link
-                      href={`/randonnee/${t.region_slug}/${t.department_slug}/${t.slug}`}
-                      className="group flex items-start gap-3"
-                    >
-                      <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
-                        <Image src={t.cover_photo_url} alt={t.name} fill className="object-cover transition-transform group-hover:scale-110 duration-300" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#111111] group-hover:text-[#025C00] transition-colors line-clamp-2 leading-snug">
-                          {t.name}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">{t.distance_km} km · {t.elevation_gain_m} m D+</p>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Autres randonnées de la région (démo) */}
+            {DEMO_TRAILS.filter(t => t.region_slug === trail!.region_slug && t.slug !== trail!.slug).length > 0 && (
+              <div className="border border-[#E5E7EB] rounded-2xl p-5">
+                <h3 className="font-bold text-[#111111] mb-4">Dans la même région</h3>
+                <ul className="space-y-3">
+                  {DEMO_TRAILS.filter(t => t.region_slug === trail!.region_slug && t.slug !== trail!.slug).slice(0, 3).map(t => (
+                    <li key={t.id}>
+                      <Link href={`/randonnee/${t.region_slug}/${t.department_slug}/${t.slug}`} className="group flex items-start gap-3">
+                        <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
+                          <Image src={t.cover_photo_url} alt={t.name} fill className="object-cover transition-transform group-hover:scale-110 duration-300" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-[#111111] group-hover:text-[#025C00] transition-colors line-clamp-2 leading-snug">{t.name}</p>
+                          <p className="text-xs text-gray-400 mt-1">{t.distance_km} km · {t.elevation_gain_m} m D+</p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>

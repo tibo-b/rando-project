@@ -1,8 +1,6 @@
 'use client'
 
-// La carte est chargée uniquement côté navigateur (pas côté serveur)
-// car Leaflet et MapLibre ont besoin du DOM pour fonctionner
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   lat: number
@@ -10,17 +8,37 @@ interface Props {
   gpxUrl?: string | null
 }
 
+// Fonds de carte IGN disponibles (tous gratuits, sans clé API)
+const BASEMAPS = [
+  {
+    id: 'topo',
+    label: 'Topo IGN',
+    url: 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+  },
+  {
+    id: 'satellite',
+    label: 'Satellite',
+    url: 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+  },
+  {
+    id: 'hiking',
+    label: 'Randonnée',
+    url: 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',
+  },
+]
+
 export default function TrailMap({ lat, lon, gpxUrl }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstance = useRef<any>(null)
+  const tileLayerRef = useRef<any>(null)
   const initialized = useRef(false)
+  const [activeBasemap, setActiveBasemap] = useState('topo')
 
   useEffect(() => {
     if (initialized.current || !mapRef.current) return
     initialized.current = true
 
-    // Import dynamique de Leaflet (chargé seulement dans le navigateur)
     import('leaflet').then(L => {
-      // Supprimer l'icône par défaut de Leaflet (problème connu avec les bundlers)
       // @ts-expect-error — propriété interne Leaflet
       delete L.Icon.Default.prototype._getIconUrl
       L.Icon.Default.mergeOptions({
@@ -29,28 +47,35 @@ export default function TrailMap({ lat, lon, gpxUrl }: Props) {
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
 
-      const map = L.map(mapRef.current!).setView([lat, lon], 13)
+      const map = L.map(mapRef.current!, { zoomControl: false }).setView([lat, lon], 13)
+      mapInstance.current = map
 
-      // Tuiles topographiques IGN France (gratuites, sans clé API)
-      L.tileLayer(
-        'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
-        {
-          attribution: '© IGN France',
-          maxZoom: 18,
-        }
-      ).addTo(map)
+      // Contrôle zoom repositionné en bas à droite
+      L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-      // Marqueur au point de départ
-      L.marker([lat, lon])
+      // Fond de carte initial (topo IGN)
+      const basemap = BASEMAPS.find(b => b.id === 'topo')!
+      tileLayerRef.current = L.tileLayer(basemap.url, {
+        attribution: '© IGN Géoportail',
+        maxZoom: 18,
+      }).addTo(map)
+
+      // Marqueur départ stylisé
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:32px;height:32px;background:#025C00;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3)"><div style="transform:rotate(45deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px">🥾</div></div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      })
+      L.marker([lat, lon], { icon })
         .addTo(map)
-        .bindPopup('Départ')
+        .bindPopup('<strong>Point de départ</strong>')
 
-      // Si on a un fichier GPX, on le charge et on affiche la trace
+      // Trace GPX si disponible
       if (gpxUrl) {
         fetch(gpxUrl)
           .then(r => r.text())
           .then(gpxText => {
-            // Parse GPX basique pour extraire les points de la trace
             const parser = new DOMParser()
             const doc = parser.parseFromString(gpxText, 'application/xml')
             const points = Array.from(doc.querySelectorAll('trkpt')).map(pt => [
@@ -59,33 +84,63 @@ export default function TrailMap({ lat, lon, gpxUrl }: Props) {
             ] as [number, number])
 
             if (points.length > 0) {
-              const polyline = L.polyline(points, { color: '#1f2937', weight: 3 })
-              polyline.addTo(map)
-              map.fitBounds(polyline.getBounds(), { padding: [20, 20] })
+              L.polyline(points, { color: '#025C00', weight: 4, opacity: 0.85 }).addTo(map)
+              map.fitBounds(L.polyline(points).getBounds(), { padding: [30, 30] })
             }
           })
-          .catch(() => { /* GPX non disponible, la carte s'affiche quand même */ })
+          .catch(() => {})
       }
     })
-
-    return () => {
-      // Nettoyage de la carte quand le composant est démonté
-      // (évite les erreurs si on navigue rapidement entre pages)
-    }
   }, [lat, lon, gpxUrl])
+
+  // Changer le fond de carte au clic sur les boutons
+  useEffect(() => {
+    if (!mapInstance.current || !tileLayerRef.current) return
+
+    import('leaflet').then(L => {
+      const basemap = BASEMAPS.find(b => b.id === activeBasemap)
+      if (!basemap) return
+
+      mapInstance.current.removeLayer(tileLayerRef.current)
+      tileLayerRef.current = L.tileLayer(basemap.url, {
+        attribution: '© IGN Géoportail',
+        maxZoom: 18,
+      }).addTo(mapInstance.current)
+
+      // Sur le fond satellite, ajouter les noms en overlay
+      if (activeBasemap === 'satellite') {
+        L.tileLayer(
+          'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+          { opacity: 0.4, maxZoom: 18 }
+        ).addTo(mapInstance.current)
+      }
+    })
+  }, [activeBasemap])
 
   return (
     <>
-      {/* Feuille de style Leaflet chargée via CSS */}
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      />
-      <div
-        ref={mapRef}
-        className="w-full rounded-lg border border-gray-200 overflow-hidden"
-        style={{ height: '380px', background: '#f3f4f6' }}
-      />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <div className="relative">
+        {/* Carte */}
+        <div ref={mapRef} style={{ height: '420px', background: '#f3f4f6' }} className="w-full" />
+
+        {/* Switcher fond de carte */}
+        <div className="absolute top-3 left-3 z-[1000] flex gap-1 glass rounded-xl p-1 shadow-sm">
+          {BASEMAPS.map(b => (
+            <button
+              key={b.id}
+              onClick={() => setActiveBasemap(b.id)}
+              className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                activeBasemap === b.id
+                  ? 'bg-[#025C00] text-white shadow-sm'
+                  : 'text-[#111111] hover:bg-gray-100'
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   )
 }

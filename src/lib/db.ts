@@ -46,6 +46,13 @@ export interface Trail {
   dogs_allowed: boolean | null
   parking_info: string | null
   public_transport: string | null
+  start_address: string | null
+  municipality: string | null
+  postal_code: string | null
+  ign_map: string | null
+  dangers: string[]
+  regulations: string | null
+  waypoints: { index: number; label: string; description: string; elevation_m: number; distance_from_start_km: number }[] | null
   meta_title: string | null
   meta_description: string | null
   status: TrailStatus
