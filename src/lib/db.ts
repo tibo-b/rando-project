@@ -7,6 +7,14 @@ const sql = postgres(connectionString, {
   max: 10,
   idle_timeout: 30,
   connect_timeout: 10,
+  types: {
+    numeric: {
+      to: 1700,
+      from: [1700],
+      serialize: (x: unknown) => x,
+      parse: (x: string) => parseFloat(x),
+    },
+  },
 })
 
 export default sql
