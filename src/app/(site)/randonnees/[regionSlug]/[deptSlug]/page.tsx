@@ -56,7 +56,7 @@ export default async function DeptPage({ params }: { params: Promise<Params> }) 
 
       {/* ── EN-TÊTE ── */}
       <div className="bg-[#F5F5F5] border-b border-[#E5E7EB]">
-        <div className="max-w-6xl mx-auto px-6 py-10">
+        <div className="max-w-[1440px] mx-auto px-6 py-10">
           {/* Fil d'Ariane */}
           <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-4 flex-wrap">
             <Link href="/" className="hover:text-[#025C00] transition-colors">Accueil</Link>
@@ -93,7 +93,7 @@ export default async function DeptPage({ params }: { params: Promise<Params> }) 
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-[1440px] mx-auto px-6 py-10">
         <div className="flex flex-col lg:flex-row gap-10">
 
           {/* ── SIDEBAR ── */}

@@ -117,7 +117,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
 
         {/* Fil d'Ariane */}
         <div className="absolute top-24 left-0 right-0 px-6">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-[1440px] mx-auto">
             <nav className="flex items-center gap-1.5 text-xs text-white/70 flex-wrap">
               <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
               <span>›</span>
@@ -132,7 +132,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
 
         {/* Titre + stats sur le hero */}
         <div className="absolute bottom-0 left-0 right-0 px-6 pb-8">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-[1440px] mx-auto">
             <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full mb-3 ${diff.color}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${diff.dot}`} />
               {diff.label}
@@ -167,7 +167,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
       {/* ── AVERTISSEMENTS DE SÉCURITÉ ── affiché en haut si dangers présents */}
       {trail.dangers.length > 0 && (
         <div className="bg-amber-50 border-b border-amber-200">
-          <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="max-w-[1440px] mx-auto px-6 py-4">
             <div className="flex items-start gap-3">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92400e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
                 <path d="m10.29 3.86-8.6 14.9A2 2 0 0 0 3.41 22h17.18a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -190,7 +190,7 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
       )}
 
       {/* ── CONTENU ── */}
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-[1440px] mx-auto px-6 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
           {/* ── Colonne principale ── */}

@@ -36,11 +36,13 @@ export default async function RandonnéesPage({
   const params = await searchParams
   const { difficulte, type, region } = params
 
-  // Filtrage côté serveur (SEO : chaque combinaison de filtres = URL indexable)
+  // Filtrage côté serveur — valeurs multiples séparées par virgule
+  const diffs   = difficulte ? difficulte.split(',') : []
+  const types   = type       ? type.split(',')       : []
   let trails = DEMO_TRAILS
-  if (difficulte) trails = trails.filter(t => t.difficulty === difficulte)
-  if (type)       trails = trails.filter(t => t.trail_type === type)
-  if (region)     trails = trails.filter(t => t.region_slug === region)
+  if (diffs.length)   trails = trails.filter(t => diffs.includes(t.difficulty))
+  if (types.length)   trails = trails.filter(t => types.includes(t.trail_type))
+  if (region)         trails = trails.filter(t => t.region_slug === region)
 
   const activeFilters = [difficulte, type, region].filter(Boolean)
   const regionName = region ? REGIONS.find(r => r.slug === region)?.name : null
@@ -50,7 +52,7 @@ export default async function RandonnéesPage({
 
       {/* ── EN-TÊTE ── */}
       <div className="bg-[#F5F5F5] border-b border-[#E5E7EB]">
-        <div className="max-w-6xl mx-auto px-6 py-10">
+        <div className="max-w-[1440px] mx-auto px-6 py-10">
           {/* Fil d'Ariane */}
           <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-4 flex-wrap">
             <Link href="/" className="hover:text-[#025C00] transition-colors">Accueil</Link>
@@ -78,7 +80,7 @@ export default async function RandonnéesPage({
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-[1440px] mx-auto px-6 py-10">
         <div className="flex flex-col lg:flex-row gap-10">
 
           {/* ── SIDEBAR FILTRES + RÉGIONS ── */}

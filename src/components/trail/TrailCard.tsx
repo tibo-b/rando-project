@@ -35,7 +35,7 @@ export default function TrailCard({ trail, showDept = false }: Props) {
   return (
     <Link
       href={href}
-      className="group block bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+      className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
     >
       {/* Photo */}
       <div className="relative h-52 overflow-hidden">
@@ -59,19 +59,19 @@ export default function TrailCard({ trail, showDept = false }: Props) {
       </div>
 
       {/* Contenu */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         {showDept && (
           <p className="text-sm text-gray-500 mb-1 font-medium">{trail.department_name}</p>
         )}
         <h3 className="font-bold text-[#111111] text-base leading-snug mb-2 line-clamp-2">
           {trail.name}
         </h3>
-        <p className="text-base text-gray-500 line-clamp-2 mb-4 leading-relaxed">
+        <p className="text-base text-gray-500 line-clamp-2 leading-relaxed flex-1">
           {trail.short_description}
         </p>
 
         {/* Stats */}
-        <div className="flex items-center gap-3 pt-3 border-t border-[#F5F5F5] text-base">
+        <div className="flex items-center gap-3 pt-3 mt-4 border-t border-[#F5F5F5] text-base">
           <div className="flex items-center gap-1.5 text-[#111111] font-medium">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#025C00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12h18M3 12l4-4m-4 4 4 4" />

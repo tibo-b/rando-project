@@ -41,7 +41,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
         </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 w-full">
+        <div className="relative z-10 max-w-[1440px] mx-auto px-6 w-full">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 text-white/80 text-base font-medium mb-4">
               <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse" />
@@ -90,7 +90,7 @@ export default function HomePage() {
       </section>
 
       {/* ── RANDONNÉES MISES EN AVANT ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="max-w-[1440px] mx-auto px-6 py-20">
         <ScrollReveal>
           <div className="flex items-end justify-between mb-10">
             <div>
@@ -184,7 +184,7 @@ export default function HomePage() {
 
       {/* ── PAR DIFFICULTÉ ── */}
       <section className="bg-[#F5F5F5] py-20">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-[1440px] mx-auto px-6">
           <ScrollReveal>
             <p className="text-[#025C00] text-sm font-semibold uppercase tracking-widest mb-2">Tous les niveaux</p>
             <h2 className="text-3xl md:text-4xl font-bold text-[#111111] mb-10">Choisissez votre niveau</h2>
@@ -214,7 +214,7 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA FINAL ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="max-w-[1440px] mx-auto px-6 py-20">
         <ScrollReveal>
           <div className="bg-[#025C00] rounded-3xl px-8 py-14 text-center text-white relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5" />
