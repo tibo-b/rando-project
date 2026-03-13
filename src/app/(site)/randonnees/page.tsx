@@ -4,11 +4,13 @@ import { Suspense } from 'react'
 import { DEMO_TRAILS } from '@/lib/demo-data'
 import TrailCard from '@/components/trail/TrailCard'
 import TrailFilters from '@/components/trail/TrailFilters'
+import { buildMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Toutes les randonnées en France — Rando France',
+export const metadata: Metadata = buildMetadata({
+  title: 'Toutes les randonnées en France',
   description: 'Découvrez des milliers de randonnées en France avec fiches détaillées, traces GPX, dénivelé et difficulté. Toutes les régions et départements.',
-}
+  path: '/randonnees',
+})
 
 const REGIONS = [
   { slug: 'provence-alpes-cote-dazur', name: 'Provence-Alpes-Côte d\'Azur' },

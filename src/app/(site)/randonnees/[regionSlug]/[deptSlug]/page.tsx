@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { DEMO_TRAILS } from '@/lib/demo-data'
 import TrailCard from '@/components/trail/TrailCard'
+import { buildMetadata } from '@/lib/seo'
 
 const REGION_NAMES: Record<string, string> = {
   'provence-alpes-cote-dazur': "Provence-Alpes-Côte d'Azur",
@@ -28,10 +29,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const regionName = REGION_NAMES[regionSlug] ?? regionSlug
   const deptName = trails[0]?.department_name ?? deptSlug
 
-  return {
-    title: `Randonnées en ${deptName} (${regionName}) — Rando France`,
+  return buildMetadata({
+    title: `Randonnées en ${deptName} (${regionName})`,
     description: `${trails.length} randonnée${trails.length > 1 ? 's' : ''} en ${deptName} : fiches détaillées avec traces GPX, dénivelé et difficulté.`,
-  }
+    path: `/randonnees/${regionSlug}/${deptSlug}`,
+  })
 }
 
 export default async function DeptPage({ params }: { params: Promise<Params> }) {

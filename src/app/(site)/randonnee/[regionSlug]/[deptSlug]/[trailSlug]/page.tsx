@@ -7,6 +7,7 @@ import TrailMap from '@/components/map/TrailMap'
 import ElevationChart from '@/components/trail/ElevationChart'
 import NearbyTrails from '@/components/trail/NearbyTrails'
 import { DEMO_TRAILS, getDemoTrailBySlug, type DemoTrail } from '@/lib/demo-data'
+import { buildMetadata, SITE_URL } from '@/lib/seo'
 
 const DIFFICULTY_MAP: Record<string, { label: string; color: string; dot: string }> = {
   tres_facile:    { label: 'Très facile',    color: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
@@ -31,24 +32,25 @@ function formatDuration(min: number) {
 type Params = { regionSlug: string; deptSlug: string; trailSlug: string }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { trailSlug } = await params
-  let name = ''
-  let desc = ''
+  const { regionSlug, deptSlug, trailSlug } = await params
+  let name = ''; let desc = ''; let image = ''
   try {
     const t = await getApprovedTrailBySlug(trailSlug)
-    if (t) { name = t.name; desc = t.short_description ?? '' }
+    if (t) { name = t.name; desc = t.short_description ?? ''; image = t.cover_photo_url ?? '' }
   } catch { /* DB non dispo */ }
 
   if (!name) {
     const demo = getDemoTrailBySlug(trailSlug)
-    if (demo) { name = demo.name; desc = demo.short_description }
+    if (demo) { name = demo.name; desc = demo.short_description; image = demo.cover_photo_url }
   }
 
   if (!name) return { title: 'Randonnée introuvable' }
-  return {
-    title: `${name} — Rando France`,
+  return buildMetadata({
+    title: name,
     description: desc,
-  }
+    path: `/randonnee/${regionSlug}/${deptSlug}/${trailSlug}`,
+    image: image || undefined,
+  })
 }
 
 export default async function TrailPage({ params }: { params: Promise<Params> }) {
@@ -104,8 +106,45 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
 
   const diff = DIFFICULTY_MAP[trail.difficulty] ?? { label: '—', color: 'bg-gray-100 text-gray-500', dot: 'bg-gray-400' }
 
+  // JSON-LD schema.org
+  const trailUrl = `${SITE_URL}/randonnee/${trail.region_slug}/${trail.department_slug}/${trail.slug}`
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsActivityLocation',
+    name: trail.name,
+    description: trail.short_description,
+    url: trailUrl,
+    image: trail.cover_photo_url || undefined,
+    address: {
+      '@type': 'PostalAddress',
+      addressRegion: trail.region_name,
+      addressLocality: trail.department_name,
+      addressCountry: 'FR',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: trail.start_lat,
+      longitude: trail.start_lon,
+    },
+    // Breadcrumb
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Accueil',     item: SITE_URL },
+        { '@type': 'ListItem', position: 2, name: 'Randonnées',  item: `${SITE_URL}/randonnees` },
+        { '@type': 'ListItem', position: 3, name: trail.region_name,     item: `${SITE_URL}/randonnees/${trail.region_slug}` },
+        { '@type': 'ListItem', position: 4, name: trail.department_name, item: `${SITE_URL}/randonnees/${trail.region_slug}/${trail.department_slug}` },
+        { '@type': 'ListItem', position: 5, name: trail.name,   item: trailUrl },
+      ],
+    },
+  }
+
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ── HERO PHOTO ── */}
       <div className="relative h-[55vh] min-h-[360px] overflow-hidden">
         {trail.cover_photo_url ? (

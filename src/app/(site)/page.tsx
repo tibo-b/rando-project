@@ -1,7 +1,16 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { DEMO_TRAILS } from '@/lib/demo-data'
 import ScrollReveal from '@/components/ui/ScrollReveal'
+import { buildMetadata } from '@/lib/seo'
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Rando France — L\'encyclopédie de la randonnée en France',
+  description: 'Découvrez des milliers de randonnées en France avec fiches détaillées, traces GPX, dénivelé et difficulté. Toutes les régions, tous les niveaux.',
+  path: '/',
+  image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&h=630&fit=crop',
+})
 
 const DIFFICULTY_MAP = {
   tres_facile:    { label: 'Très facile',    color: 'bg-emerald-100 text-emerald-700' },

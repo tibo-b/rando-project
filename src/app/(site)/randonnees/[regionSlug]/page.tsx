@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { DEMO_TRAILS } from '@/lib/demo-data'
 import TrailCard from '@/components/trail/TrailCard'
+import { buildMetadata } from '@/lib/seo'
 
 // Noms affichables des régions
 const REGION_NAMES: Record<string, string> = {
@@ -27,10 +28,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { regionSlug } = await params
   const name = REGION_NAMES[regionSlug]
   if (!name) return { title: 'Région introuvable' }
-  return {
-    title: `Randonnées en ${name} — Rando France`,
+  return buildMetadata({
+    title: `Randonnées en ${name}`,
     description: `Découvrez toutes les randonnées en ${name} : fiches détaillées, traces GPX, difficulté et itinéraires par département.`,
-  }
+    path: `/randonnees/${regionSlug}`,
+  })
 }
 
 export default async function RegionPage({ params }: { params: Promise<Params> }) {
