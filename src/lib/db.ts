@@ -238,6 +238,44 @@ export async function searchTrails(query: string, limit = 20) {
   `
 }
 
+// ============================================================
+// Requêtes : Listing public (avec filtres)
+// ============================================================
+
+export async function getTrailsForListing({
+  diffs = [],
+  types = [],
+  regionSlug,
+  limit = 60,
+  offset = 0,
+}: {
+  diffs?: string[]
+  types?: string[]
+  regionSlug?: string
+  limit?: number
+  offset?: number
+}) {
+  return sql`
+    SELECT
+      t.id, t.slug, t.name, t.short_description,
+      t.difficulty, t.trail_type,
+      t.distance_km, t.elevation_gain_m, t.duration_min,
+      t.cover_photo_url,
+      r.slug AS region_slug,
+      d.slug AS department_slug,
+      d.name AS department_name
+    FROM trails t
+    LEFT JOIN regions r ON t.region_id = r.id
+    LEFT JOIN departments d ON t.department_id = d.id
+    WHERE t.status = 'approved'
+      ${diffs.length > 0 ? sql`AND t.difficulty = ANY(${diffs})` : sql``}
+      ${types.length > 0 ? sql`AND t.trail_type = ANY(${types})` : sql``}
+      ${regionSlug ? sql`AND r.slug = ${regionSlug}` : sql``}
+    ORDER BY t.name
+    LIMIT ${limit} OFFSET ${offset}
+  `
+}
+
 // Compte des trails en attente (pour le badge admin)
 export async function getPendingCount() {
   const [{ count }] = await sql<[{ count: string }]>`

@@ -1,7 +1,8 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { DEMO_TRAILS } from '@/lib/demo-data'
+import { DEMO_TRAILS, type DemoTrail } from '@/lib/demo-data'
+import { getTrailsForListing } from '@/lib/db'
 import TrailCard from '@/components/trail/TrailCard'
 import TrailFilters from '@/components/trail/TrailFilters'
 import { buildMetadata } from '@/lib/seo'
@@ -39,12 +40,20 @@ export default async function RandonnéesPage({
   const { difficulte, type, region } = params
 
   // Filtrage côté serveur — valeurs multiples séparées par virgule
-  const diffs   = difficulte ? difficulte.split(',') : []
-  const types   = type       ? type.split(',')       : []
-  let trails = DEMO_TRAILS
-  if (diffs.length)   trails = trails.filter(t => diffs.includes(t.difficulty))
-  if (types.length)   trails = trails.filter(t => types.includes(t.trail_type))
-  if (region)         trails = trails.filter(t => t.region_slug === region)
+  const diffs = difficulte ? difficulte.split(',') : []
+  const types = type       ? type.split(',')       : []
+
+  // DB d'abord, DEMO_TRAILS en fallback si DB non connectée
+  let trails: DemoTrail[]
+  try {
+    const dbTrails = await getTrailsForListing({ diffs, types, regionSlug: region })
+    trails = dbTrails as unknown as DemoTrail[]
+  } catch {
+    trails = DEMO_TRAILS
+    if (diffs.length) trails = trails.filter(t => diffs.includes(t.difficulty))
+    if (types.length) trails = trails.filter(t => types.includes(t.trail_type))
+    if (region)       trails = trails.filter(t => t.region_slug === region)
+  }
 
   const activeFilters = [difficulte, type, region].filter(Boolean)
   const regionName = region ? REGIONS.find(r => r.slug === region)?.name : null

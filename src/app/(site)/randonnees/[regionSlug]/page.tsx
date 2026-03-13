@@ -1,7 +1,8 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { DEMO_TRAILS } from '@/lib/demo-data'
+import { DEMO_TRAILS, type DemoTrail } from '@/lib/demo-data'
+import { getTrailsForListing } from '@/lib/db'
 import TrailCard from '@/components/trail/TrailCard'
 import { buildMetadata } from '@/lib/seo'
 
@@ -39,7 +40,13 @@ export default async function RegionPage({ params }: { params: Promise<Params> }
   const { regionSlug } = await params
   const regionName = REGION_NAMES[regionSlug]
 
-  const trails = DEMO_TRAILS.filter(t => t.region_slug === regionSlug)
+  let trails: DemoTrail[]
+  try {
+    const dbTrails = await getTrailsForListing({ regionSlug })
+    trails = dbTrails as unknown as DemoTrail[]
+  } catch {
+    trails = DEMO_TRAILS.filter(t => t.region_slug === regionSlug)
+  }
 
   // Page accessible uniquement si la région existe (en base ou en démo)
   if (!regionName) notFound()
