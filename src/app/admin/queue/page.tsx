@@ -73,7 +73,7 @@ export default async function AdminQueuePage() {
       getPendingTrails(50),
       getPendingCount(),
     ])
-    trails = dbTrails as typeof DEMO_TRAILS
+    trails = dbTrails as unknown as typeof DEMO_TRAILS
     pendingCount = count
     dbConnected = true
   } catch {

@@ -16,10 +16,11 @@ const DIFFICULTY_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 export default async function NearbyTrails({ trailId, lat, lon }: Props) {
-  let trails: Awaited<ReturnType<typeof getNearbyTrails>> = []
+  type NearbyTrail = { id: number; slug: string; name: string; difficulty: string | null; distance_km: number | null; elevation_gain_m: number | null; region_slug: string; department_slug: string }
+  let trails: NearbyTrail[] = []
 
   try {
-    trails = await getNearbyTrails(trailId, lat, lon, 30, 4)
+    trails = (await getNearbyTrails(trailId, lat, lon, 30, 4)) as unknown as NearbyTrail[]
   } catch {
     // DB non disponible — on n'affiche rien
     return null

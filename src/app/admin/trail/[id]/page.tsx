@@ -87,7 +87,7 @@ export default async function AdminTrailPage({
   try {
     const dbTrail = await getTrailById(trailId)
     if (dbTrail) {
-      trail = dbTrail as typeof DEMO_TRAIL
+      trail = dbTrail as unknown as typeof DEMO_TRAIL
       dbConnected = true
     }
   } catch {
