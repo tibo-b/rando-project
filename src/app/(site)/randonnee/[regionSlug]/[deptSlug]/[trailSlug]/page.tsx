@@ -303,9 +303,19 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
             {/* Description */}
             {trail.description && (
               <section>
-                <h2 className="text-2xl font-bold text-[#111111] mb-4 pl-4 border-l-4 border-[#025C00]">Description</h2>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-base">
-                  {trail.description}
+                <h2 className="text-2xl font-bold text-[#111111] mb-5 pl-4 border-l-4 border-[#025C00]">Description</h2>
+                <div className="space-y-4">
+                  {trail.description.split(/\r?\n\r?\n/).filter(Boolean).map((para: string, i: number) => (
+                    i === 0 ? (
+                      <p key={i} className="text-gray-800 leading-relaxed text-base font-medium bg-emerald-50/60 border-l-4 border-[#025C00] pl-4 py-3 rounded-r-lg">
+                        {para.trim()}
+                      </p>
+                    ) : (
+                      <p key={i} className="text-gray-700 leading-relaxed text-base">
+                        {para.trim()}
+                      </p>
+                    )
+                  ))}
                 </div>
               </section>
             )}
