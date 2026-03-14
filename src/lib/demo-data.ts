@@ -38,6 +38,9 @@ export interface DemoTrail {
   gear: string[]
   dangers: string[]         // avertissements de sécurité
   regulations: string | null // réglementation zone (parc national, etc.)
+  best_seasons: string[]
+  dogs_allowed: boolean | null
+  public_transport: string | null
   waypoints: Waypoint[]
   distances_km: number[]
   elevations_m: number[]
@@ -86,6 +89,9 @@ Points d'intérêt majeurs : le Belvédère de la Mescla, le pont de l'Artuby (1
       'Pas de réseau mobile dans le fond des gorges',
     ],
     regulations: 'Parc Naturel Régional du Verdon — chiens tenus en laisse obligatoire, feux interdits.',
+    best_seasons: ['printemps', 'automne'],
+    dogs_allowed: false,
+    public_transport: 'Depuis Castellane : navette estivale La Palud ↔ Castellane en juillet-août.',
     waypoints: [
       { index: 1, label: 'Parking départ', description: 'Du parking, prendre le sentier balisé GR4 en direction du sud. Longer la crête sur 2 km.', elevation_m: 950, distance_from_start_km: 0 },
       { index: 2, label: 'Belvédère de la Mescla', description: 'Vue spectaculaire sur la confluence Verdon/Artuby. Continuer sur le GR4 vers l\'ouest.', elevation_m: 870, distance_from_start_km: 3.5 },
@@ -141,6 +147,9 @@ Attention : l'accès en voiture est interdit de juin à septembre.`,
       'Fermeture estivale possible en cas de risque incendie (vérifier avant départ)',
     ],
     regulations: 'Parc National des Calanques — camping interdit, chiens interdits sur les plages de juin à septembre, cueillette interdite.',
+    best_seasons: ['printemps', 'automne', 'hiver'],
+    dogs_allowed: false,
+    public_transport: 'Bus RTM ligne 23 depuis métro Castellane. En juil-août : navette spéciale "Calanques".',
     waypoints: [
       { index: 1, label: 'Col de Morgiou', description: 'Départ du parking. Prendre le sentier balisé en jaune vers la calanque de Morgiou.', elevation_m: 220, distance_from_start_km: 0 },
       { index: 2, label: 'Calanque de Morgiou', description: 'Descente vers le port de pêche. Spot de baignade. Remonter par le sentier ouest.', elevation_m: 0, distance_from_start_km: 2.1 },
@@ -192,6 +201,9 @@ Idéal en famille avec des enfants motivés. En hiver, le lac gèle partiellemen
       'Névés (plaques de neige) possibles jusqu\'en juillet sur le chemin',
     ],
     regulations: 'Parc National des Pyrénées — chiens tenus en laisse obligatoire, bivouac interdit à moins de 1h des routes.',
+    best_seasons: ['printemps', 'ete', 'automne'],
+    dogs_allowed: false,
+    public_transport: 'Navette gratuite depuis Cauterets centre (mai-oct, toutes les 30 min).',
     waypoints: [
       { index: 1, label: 'Pont d\'Espagne', description: 'Depuis le parking, suivre le sentier balisé le long du gave de Gaube vers le sud.', elevation_m: 1496, distance_from_start_km: 0 },
       { index: 2, label: 'Cascades du gave', description: 'Belles cascades sur la droite. Continuer la montée régulière dans la forêt de sapins.', elevation_m: 1580, distance_from_start_km: 1.2 },
@@ -243,6 +255,9 @@ Le temple romain de Mercure, partiellement restauré, trône au sommet depuis 2 
       'Sentier fermé lors de la montée du Puy de Dôme (course) — vérifier le calendrier',
     ],
     regulations: 'Site classé Grand Site de France — respect des pelouses volcaniques obligatoire, ne pas sortir des sentiers balisés.',
+    best_seasons: ['printemps', 'ete', 'automne'],
+    dogs_allowed: true,
+    public_transport: 'Panoramique des Dômes (train crémaillère) depuis Royat. Bus T2C ligne 14 jusqu\'à Orcines.',
     waypoints: [
       { index: 1, label: 'Col de Ceyssat', description: 'Départ depuis le col. Prendre le sentier balisé GR441 vers le Puy de Dôme.', elevation_m: 1078, distance_from_start_km: 0 },
       { index: 2, label: 'Forêt de hêtres', description: 'Montée régulière en sous-bois. Le sentier s\'élargit après 1 km.', elevation_m: 1160, distance_from_start_km: 1 },
@@ -294,6 +309,9 @@ Idéal en toutes saisons, particulièrement en automne pour les couleurs.`,
       'Ne pas escalader les rochers gréseux hors zones balisées',
     ],
     regulations: 'Forêt domaniale ONF — chiens tenus en laisse obligatoire, bivouac interdit, cueillette limitée à usage personnel.',
+    best_seasons: ['printemps', 'ete', 'automne', 'hiver'],
+    dogs_allowed: true,
+    public_transport: 'Train Transilien R depuis Paris Gare de Lyon (40 min), puis bus Fontibus ligne 3.',
     waypoints: [
       { index: 1, label: 'Parking Franchard', description: 'Départ du parking. Prendre le sentier bleu vers les gorges.', elevation_m: 100, distance_from_start_km: 0 },
       { index: 2, label: 'Ermitage de Franchard', description: 'Ruines d\'un ancien ermitage. Continuer vers le fond des gorges.', elevation_m: 95, distance_from_start_km: 1.5 },
@@ -347,6 +365,9 @@ Parcours conseillé tôt le matin pour éviter les orages d'après-midi fréquen
       'Terrain rocheux instable sur les 200 derniers mètres — progression lente',
     ],
     regulations: null,
+    best_seasons: ['ete', 'automne'],
+    dogs_allowed: true,
+    public_transport: 'Bus Chamonix Bus ligne 1 jusqu\'aux Houches (25 min). Train Mont-Blanc Express depuis St-Gervais.',
     waypoints: [
       { index: 1, label: 'Pont du Diable', description: 'Départ du parking. Prendre le sentier balisé en rouge vers les alpages.', elevation_m: 1008, distance_from_start_km: 0 },
       { index: 2, label: 'Alpage de Bourgeat', description: 'Premier alpage avec chalet en activité. Vue sur la vallée de Chamonix. Continuer vers le haut.', elevation_m: 1450, distance_from_start_km: 2.5 },

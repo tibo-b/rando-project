@@ -91,6 +91,9 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
         gear: (dbTrail as any).recommended_gear ?? [],
         dangers: (dbTrail as any).dangers ?? [],
         regulations: (dbTrail as any).regulations ?? null,
+        best_seasons: (dbTrail as any).best_seasons ?? [],
+        dogs_allowed: (dbTrail as any).dogs_allowed ?? null,
+        public_transport: (dbTrail as any).public_transport ?? null,
         waypoints: (dbTrail as any).waypoints ?? [],
         distances_km: (dbTrail as any).distances_km ?? [],
         elevations_m: (dbTrail as any).elevations_m ?? [],
@@ -342,6 +345,29 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
                   <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 sm:col-span-2">
                     <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-1.5">Réglementation</p>
                     <p className="text-base text-amber-800 leading-relaxed">{trail.regulations}</p>
+                  </div>
+                )}
+                {trail.public_transport && (
+                  <div className="bg-white border border-[#E5E7EB] border-l-4 border-l-[#025C00] rounded-xl p-4 sm:col-span-2">
+                    <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-1.5">Transports en commun</p>
+                    <p className="text-base text-gray-700 leading-relaxed">{trail.public_transport}</p>
+                  </div>
+                )}
+                {trail.best_seasons && trail.best_seasons.length > 0 && (
+                  <div className="bg-white border border-[#E5E7EB] border-l-4 border-l-[#025C00] rounded-xl p-4">
+                    <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-2">Meilleures saisons</p>
+                    <div className="flex flex-wrap gap-2">
+                      {trail.best_seasons.map((s: string) => {
+                        const labels: Record<string, string> = { printemps: '🌸 Printemps', ete: '☀️ Été', automne: '🍂 Automne', hiver: '❄️ Hiver' }
+                        return <span key={s} className="text-sm bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1 rounded-full">{labels[s] ?? s}</span>
+                      })}
+                    </div>
+                  </div>
+                )}
+                {trail.dogs_allowed !== null && trail.dogs_allowed !== undefined && (
+                  <div className="bg-white border border-[#E5E7EB] border-l-4 border-l-[#025C00] rounded-xl p-4">
+                    <p className="text-xs font-semibold text-[#025C00] uppercase tracking-widest mb-1.5">Chiens acceptés</p>
+                    <p className="text-base text-gray-700">{trail.dogs_allowed ? '✅ Oui (tenus en laisse)' : '❌ Non autorisés'}</p>
                   </div>
                 )}
                 {trail.tags.length > 0 && (
