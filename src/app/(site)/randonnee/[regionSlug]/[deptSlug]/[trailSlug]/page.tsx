@@ -305,17 +305,46 @@ export default async function TrailPage({ params }: { params: Promise<Params> })
               <section>
                 <h2 className="text-2xl font-bold text-[#111111] mb-5 pl-4 border-l-4 border-[#025C00]">Description</h2>
                 <div className="space-y-4">
-                  {trail.description.split(/\r?\n\r?\n/).filter(Boolean).map((para: string, i: number) => (
-                    i === 0 ? (
-                      <p key={i} className="text-gray-800 leading-relaxed text-base font-medium bg-emerald-50/60 border-l-4 border-[#025C00] pl-4 py-3 rounded-r-lg">
-                        {para.trim()}
-                      </p>
-                    ) : (
+                  {trail.description.split(/\r?\n\r?\n/).filter(Boolean).map((block: string, i: number) => {
+                    const t = block.trim()
+                    // Mini-titre ## ...
+                    if (t.startsWith('## ')) {
+                      return (
+                        <h3 key={i} className="text-base font-bold text-[#025C00] uppercase tracking-widest mt-6 mb-1 flex items-center gap-2">
+                          <span className="w-4 h-px bg-[#025C00] inline-block" />
+                          {t.replace('## ', '')}
+                        </h3>
+                      )
+                    }
+                    // Liste à puces : lignes commençant par "- "
+                    if (t.split('\n').every((l: string) => l.trim().startsWith('- '))) {
+                      const items = t.split('\n').map((l: string) => l.trim().replace(/^- /, ''))
+                      return (
+                        <ul key={i} className="space-y-1.5">
+                          {items.map((item: string, j: number) => (
+                            <li key={j} className="flex items-start gap-2.5 text-gray-700 text-base leading-relaxed">
+                              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#025C00] shrink-0" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    }
+                    // Premier paragraphe = intro mise en avant
+                    if (i === 0) {
+                      return (
+                        <p key={i} className="text-gray-800 leading-relaxed text-base font-medium bg-emerald-50/60 border-l-4 border-[#025C00] pl-4 py-3 rounded-r-lg">
+                          {t}
+                        </p>
+                      )
+                    }
+                    // Paragraphe normal
+                    return (
                       <p key={i} className="text-gray-700 leading-relaxed text-base">
-                        {para.trim()}
+                        {t}
                       </p>
                     )
-                  ))}
+                  })}
                 </div>
               </section>
             )}
